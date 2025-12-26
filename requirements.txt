@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+pandas
+python-dotenv
+pinecone-client
+requests
+tiktoken
+pydantic
+openai
+pinecone

@@ -1,0 +1,13 @@
+# secrets
+.env
+
+# virtual environments
+venv/
+.venv/
+
+# python cache
+__pycache__/
+*.pyc
+
+# OS files
+.DS_Store

@@ -5,7 +5,7 @@ from config import CHUNK_SIZE, OVERLAP_RATIO, TOP_K
 from api_pinecone import retrieve_context
 from api_prompt import answer_question
 
-app = FastAPI(title="TedRag", version="1.0")
+app = FastAPI(title="TedRag - Sara Rafe", version="1.0")
 
 
 class QuestionRequest(BaseModel):

@@ -22,9 +22,6 @@ FULL_CSV_PATH = "data/ted_talks_en.csv"
 BATCH_SIZE = 50
 CHUNK_STORE_LIMIT = 1200
 
-# 👉 RANGE INGESTION (FAST)
-START_ROW = 1162
-END_ROW = 1163
 
 # ---------------- Helpers ----------------
 def parse_topics(x):
@@ -47,7 +44,6 @@ def parse_topics(x):
 
 # ---------------- Load data ----------------
 df = pd.read_csv(FULL_CSV_PATH)
-df = df.iloc[START_ROW:END_ROW]
 
 required_cols = ["talk_id", "title", "speaker_1", "transcript"]
 missing = [c for c in required_cols if c not in df.columns]
@@ -126,6 +122,3 @@ if vectors_batch:
 print("\n✅ INGEST COMPLETE")
 print(f"Processed talks: {processed_talks}")
 print(f"Total chunks:    {total_chunks}")
-print(index.fetch(ids=["1428_0"]))
-print("Selected rows:", START_ROW, "to", END_ROW-1)
-print("Selected talk_id(s):", df["talk_id"].tolist())

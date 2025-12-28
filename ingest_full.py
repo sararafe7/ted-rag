@@ -22,8 +22,9 @@ FULL_CSV_PATH = "data/ted_talks_en.csv"
 BATCH_SIZE = 50
 CHUNK_STORE_LIMIT = 1200
 
-# 👉 SAFETY LIMIT
-LIMIT = 500
+# 👉 RANGE INGESTION (FAST)
+START_ROW = 1162
+END_ROW = 1163
 
 # ---------------- Helpers ----------------
 def parse_topics(x):
@@ -43,16 +44,10 @@ def parse_topics(x):
         return s
     return str(x)
 
-def talk_already_ingested(talk_id: str) -> bool:
-    """Check if talk_id_0 already exists in Pinecone."""
-    try:
-        res = index.fetch(ids=[f"{talk_id}_0"])
-        return f"{talk_id}_0" in (res.get("vectors") or {})
-    except Exception:
-        return False
 
 # ---------------- Load data ----------------
-df = pd.read_csv(FULL_CSV_PATH).head(LIMIT)
+df = pd.read_csv(FULL_CSV_PATH)
+df = df.iloc[START_ROW:END_ROW]
 
 required_cols = ["talk_id", "title", "speaker_1", "transcript"]
 missing = [c for c in required_cols if c not in df.columns]
@@ -63,15 +58,10 @@ if missing:
 vectors_batch = []
 total_chunks = 0
 processed_talks = 0
-skipped_talks = 0
 
 for _, row in df.iterrows():
     talk_id = str(row.get("talk_id", "")).strip()
     if not talk_id:
-        continue
-
-    if talk_already_ingested(talk_id):
-        skipped_talks += 1
         continue
 
     title = str(row.get("title", "")).strip()
@@ -80,6 +70,8 @@ for _, row in df.iterrows():
 
     if not isinstance(transcript, str) or not transcript.strip():
         continue
+
+    processed_talks += 1  # logging accuracy
 
     description = str(row.get("description", "")).strip()
     url = str(row.get("url", "")).strip()
@@ -124,15 +116,8 @@ for _, row in df.iterrows():
 
         if len(vectors_batch) >= BATCH_SIZE:
             index.upsert(vectors=vectors_batch)
-            print(
-                f"Upserted {len(vectors_batch)} | "
-                f"talks={processed_talks} | "
-                f"skipped={skipped_talks} | "
-                f"chunks={total_chunks}"
-            )
+            print(f"Upserted {len(vectors_batch)} | talks={processed_talks} | chunks={total_chunks}")
             vectors_batch = []
-
-    processed_talks += 1
 
 # ---------------- Flush ----------------
 if vectors_batch:
@@ -140,5 +125,7 @@ if vectors_batch:
 
 print("\n✅ INGEST COMPLETE")
 print(f"Processed talks: {processed_talks}")
-print(f"Skipped talks:   {skipped_talks}")
 print(f"Total chunks:    {total_chunks}")
+print(index.fetch(ids=["1428_0"]))
+print("Selected rows:", START_ROW, "to", END_ROW-1)
+print("Selected talk_id(s):", df["talk_id"].tolist())

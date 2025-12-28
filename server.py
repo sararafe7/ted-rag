@@ -14,7 +14,10 @@ class QuestionRequest(BaseModel):
 
 @app.get("/")
 def root():
-    return {"status": "ok", "message": "Go to /docs for Swagger UI"}
+    return {
+        "status": "ok",
+        "message": "API is running. Open /docs to test endpoints (Swagger UI)."
+    }
 
 
 @app.get("/api/stats")
@@ -24,12 +27,6 @@ def stats():
         "overlap_ratio": OVERLAP_RATIO,
         "top_k": TOP_K
     }
-
-
-@app.post("/api/pinecone")
-def pinecone_search(q: QuestionRequest):
-    context = retrieve_context(question=q.question, top_k=TOP_K, include_metadata=True)
-    return {"context": context}
 
 
 @app.post("/api/prompt")
